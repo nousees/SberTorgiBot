@@ -1,5 +1,6 @@
 package ru.sber.torgi.SberTorgiGovRu;
 
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
@@ -43,10 +44,14 @@ public class SearchService {
 
             try (ByteArrayInputStream bis = new ByteArrayInputStream(response.body());
                  Workbook workbook = new XSSFWorkbook(bis)) {
+                Sheet sheet = workbook.getSheetAt(0);
+                if (sheet.getLastRowNum() <= 1) {
+                    sendResponse(chatId, "Лоты не найдены.", bot);
+                    return;
+                }
                 excelProcessor.processExcelFile(chatId, workbook, bot);
+                sendResponse(chatId, "Поиск завершен.", bot);
             }
-
-            sendResponse(chatId, "Поиск завершен.", bot);
         } catch (Exception e) {
             sendResponse(chatId, "Ошибка при поиске: " + e.getMessage(), bot);
         }
@@ -59,3 +64,4 @@ public class SearchService {
         bot.execute(message);
     }
 }
+

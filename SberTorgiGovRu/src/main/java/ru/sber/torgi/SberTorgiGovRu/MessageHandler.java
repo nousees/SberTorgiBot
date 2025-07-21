@@ -11,11 +11,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 @Component
 public class MessageHandler {
 
     private static final int MAX_MESSAGE_LENGTH = 4096;
+    private static final Pattern VIN_PATTERN = Pattern.compile("^[A-HJ-NPR-Z0-9]{17}$");
+    private static final Pattern GOSNOMER_PATTERN = Pattern.compile("^[А-Я]\\d{3}[А-Я]{2}\\d{2,3}$");
+    private static final Pattern CADASTRAL_PATTERN = Pattern.compile("^\\d{2}:\\d{2}:\\d{6,7}:\\d+$");
+
     private final Map<Long, String> chatState = new ConcurrentHashMap<>();
     private final SearchService searchService;
 
@@ -31,25 +36,42 @@ public class MessageHandler {
             sendWelcomeMessage(chatId, bot);
             chatState.remove(chatId);
         } else if (messageText.equals("Поиск движимого имущества")) {
-            sendResponse(chatId, "Пожалуйста, введите госномер или VIN для поиска движимого имущества:", bot);
+            sendResponse(chatId, "Пожалуйста, введите госномер (например, А123БВ45) или VIN (17 буквенно-цифровых символов):", bot);
             chatState.put(chatId, "MOVABLE");
         } else if (messageText.equals("Поиск недвижимости")) {
-            sendResponse(chatId, "Пожалуйста, введите адрес или кадастровый номер для поиска недвижимости:", bot);
+            sendResponse(chatId, "Пожалуйста, введите кадастровый номер (например, 12:34:567890:123):", bot);
             chatState.put(chatId, "REALTY");
         } else if (chatState.containsKey(chatId)) {
-            searchService.searchAndExport(chatId, messageText, chatState.get(chatId), bot);
-            chatState.remove(chatId);
+            String state = chatState.get(chatId);
+            if (validateInput(messageText, state)) {
+                searchService.searchAndExport(chatId, messageText, state, bot);
+                chatState.remove(chatId);
+            } else {
+                String errorMessage = state.equals("MOVABLE")
+                        ? "Неверный формат! Введите госномер (например, А123БВ45) или VIN (17 буквенно-цифровых символов)."
+                        : "Неверный формат! Введите кадастровый номер (например, 12:34:567890:123).";
+                sendResponse(chatId, errorMessage, bot);
+            }
         } else {
             sendResponse(chatId, "Пожалуйста, используйте кнопки ниже для выбора типа поиска.", bot);
         }
+    }
+
+    private boolean validateInput(String input, String state) {
+        if (state.equals("MOVABLE")) {
+            return VIN_PATTERN.matcher(input).matches() || GOSNOMER_PATTERN.matcher(input).matches();
+        } else if (state.equals("REALTY")) {
+            return CADASTRAL_PATTERN.matcher(input).matches();
+        }
+        return false;
     }
 
     private void sendWelcomeMessage(long chatId, TorgiBot bot) throws TelegramApiException {
         String welcomeText = "Добро пожаловать в SberTorgiBot! 🎉\n" +
                 "Этот бот помогает искать движимое и недвижимое имущество на torgi.gov.ru.\n" +
                 "Используйте кнопки ниже для начала поиска:\n" +
-                "- Поиск движимого имущества: введите госномер или VIN.\n" +
-                "- Поиск недвижимости: введите адрес или кадастровый номер.";
+                "- Поиск движимого имущества: введите госномер (например, А123БВ45) или VIN (17 символов).\n" +
+                "- Поиск недвижимости: введите кадастровый номер (например, 12:34:567890:123).";
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(welcomeText);

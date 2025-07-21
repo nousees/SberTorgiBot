@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SberTorgiGovRu.iml" filepath="$PROJECT_DIR$/.idea/SberTorgiGovRu.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/SberTorgiBot.iml" filepath="$PROJECT_DIR$/.idea/SberTorgiBot.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SberTorgiGovRu/SberTorgiGovRu.iml" filepath="$PROJECT_DIR$/SberTorgiGovRu/SberTorgiGovRu.iml" />
     </modules>
   </component>
 </project>
