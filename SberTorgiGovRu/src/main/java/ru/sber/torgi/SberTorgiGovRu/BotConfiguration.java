@@ -11,18 +11,23 @@ import java.util.logging.Logger;
 @Component
 public class BotConfiguration {
 
-    @Value("${telegram.bot.token}")
     private String botToken;
 
-    @Value("${telegram.bot.username}")
     private String botUsername;
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
-    public BotConfiguration() {
+    public BotConfiguration(    
+        @Value("${telegram.bot.username}") String botUsername, 
+        @Value("${telegram.bot.token}") String botToken
+        ) {
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper();
+        this.botToken = botToken;
+        this.botUsername = botUsername;
+        System.out.println("Bot username: " + botUsername);
+        System.out.println("Bot token: " + botToken);
         Logger.getLogger("org.apache.http").setLevel(Level.SEVERE);
     }
 
