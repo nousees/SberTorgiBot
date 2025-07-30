@@ -1,8 +1,0 @@
-services:
-  app:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      - TORGI_BOT_USERNAME=@sber_torgi_gov_ru_bot
-      - TORGI_BOT_TOKEN=7969430861:AAGVOVjPp8OeVRG92QCpS_BNNBM1bqBlYdY
