@@ -1,0 +1,4 @@
+telegram:
+  bot:
+    token: ${TORGI_BOT_TELGRAM_TOKEN:default}
+    username: ${TORGI_BOT_TELEGRAM_USERNAME:default}
